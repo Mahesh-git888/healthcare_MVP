@@ -108,6 +108,7 @@ The backend appends rows in this order:
 10. Shift Type
 11. Status
 12. Notes
+13. BDO ID
 
 ## Deployment
 

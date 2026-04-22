@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Notice } from '@/components/ui/notice';
+import { EarningsWidget } from '@/components/earnings-widget';
 import { clearPartnerSession, getPartnerSession } from '@/lib/auth';
 import { submitLead } from '@/lib/api';
 
@@ -27,6 +28,7 @@ export default function SubmitLeadPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [partnerName, setPartnerName] = useState('');
+  const [partnerToken, setPartnerToken] = useState('');
 
   useEffect(() => {
     const session = getPartnerSession();
@@ -37,6 +39,7 @@ export default function SubmitLeadPage() {
     }
 
     setPartnerName(session.partner.name);
+    setPartnerToken(session.token);
     setReady(true);
   }, [router]);
 
@@ -91,6 +94,7 @@ export default function SubmitLeadPage() {
       description="Captured leads are validated by the backend and appended to the referral sheet instantly."
     >
       <div className="space-y-4">
+        {partnerToken ? <EarningsWidget token={partnerToken} /> : null}
         <Card className="space-y-3">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -173,4 +177,3 @@ export default function SubmitLeadPage() {
     </PageShell>
   );
 }
-

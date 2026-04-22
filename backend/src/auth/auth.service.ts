@@ -140,6 +140,7 @@ function serializePartner(partner: Partner) {
     id: partner.id,
     name: partner.name,
     phone: partner.phone,
+    bdoId: partner.bdoId ?? null,
     role: partner.role,
     city: partner.city,
     area: partner.area,

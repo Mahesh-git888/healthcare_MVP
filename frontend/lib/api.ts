@@ -2,6 +2,7 @@ import {
   AdminSessionResponse,
   CreatePartnerPayload,
   LeadPayload,
+  PartnerEarningsResponse,
   PartnerSessionResponse,
   Partner,
 } from './types';
@@ -66,7 +67,7 @@ export function exchangeAccessLink(token: string) {
 }
 
 export function submitLead(token: string, payload: LeadPayload) {
-  return api<{ message: string; status: string }>('/leads', {
+  return api<{ message: string; status: string; leadId?: string }>('/leads', {
     method: 'POST',
     body: JSON.stringify(payload),
     token,
@@ -104,3 +105,6 @@ export function generatePartnerLink(token: string, partnerId: string) {
   );
 }
 
+export function getPartnerEarnings(token: string) {
+  return api<PartnerEarningsResponse>('/partner/earnings', { token });
+}

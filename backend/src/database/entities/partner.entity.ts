@@ -12,6 +12,9 @@ export class Partner {
   @Column({ unique: true })
   phone!: string;
 
+  @Column({ name: 'bdo_id', type: 'varchar', length: 64, nullable: true })
+  bdoId!: string | null;
+
   @Column({
     type: 'enum',
     enum: PartnerRole,
@@ -33,4 +36,3 @@ export class Partner {
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 }
-

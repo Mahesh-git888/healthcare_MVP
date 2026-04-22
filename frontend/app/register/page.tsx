@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useState } from 'react';
+import { FormEvent, Suspense, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { PageShell } from '@/components/layout/page-shell';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -27,7 +28,17 @@ const initialState = {
 };
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={<RegisterFallback />}>
+      <RegisterContent />
+    </Suspense>
+  );
+}
+
+function RegisterContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const bdoId = searchParams.get('bdo_id')?.trim() || '';
   const [form, setForm] = useState(initialState);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,7 +49,10 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const response = await registerPartner(form);
+      const response = await registerPartner({
+        ...form,
+        ...(bdoId ? { bdoId } : {}),
+      });
       setPartnerSession(response.accessToken, response.partner);
       router.push('/submit-lead');
     } catch (err) {
@@ -132,3 +146,15 @@ export default function RegisterPage() {
   );
 }
 
+function RegisterFallback() {
+  return (
+    <PageShell
+      title="Partner registration"
+      description="Register your organization details once, then submit patient leads from the same secure flow."
+    >
+      <Card className="text-center">
+        <div className="mx-auto h-14 w-14 animate-pulse rounded-full bg-brand-100" />
+      </Card>
+    </PageShell>
+  );
+}

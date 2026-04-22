@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString, Matches } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 import { PartnerRole } from '../../common/enums/partner-role.enum';
 
 export class RegisterPartnerDto {
@@ -13,6 +13,16 @@ export class RegisterPartnerDto {
 
   @IsEnum(PartnerRole)
   role!: PartnerRole;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  bdoId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  bdo_id?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -30,4 +40,3 @@ export class RegisterPartnerDto {
   @IsNotEmpty()
   address!: string;
 }
-

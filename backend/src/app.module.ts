@@ -5,6 +5,7 @@ import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { Admin } from './database/entities/admin.entity';
 import { Partner } from './database/entities/partner.entity';
+import { EarningsModule } from './earnings/earnings.module';
 import { GoogleSheetsModule } from './google-sheets/google-sheets.module';
 import { LeadModule } from './lead/lead.module';
 import { PartnerModule } from './partner/partner.module';
@@ -31,6 +32,7 @@ import { PartnerModule } from './partner/partner.module';
     LeadModule,
     AdminModule,
     GoogleSheetsModule,
+    EarningsModule,
   ],
 })
 export class AppModule {}
@@ -45,4 +47,3 @@ function shouldUseSsl(databaseUrl?: string) {
 
   return isLocal ? false : { rejectUnauthorized: false };
 }
-

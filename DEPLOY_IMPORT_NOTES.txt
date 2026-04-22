@@ -1,0 +1,22 @@
+Render import file:
+C:\Users\itsfo\OneDrive\Desktop\projects\Healthcare_MVP\render.env.txt
+
+Vercel import file:
+C:\Users\itsfo\OneDrive\Desktop\projects\Healthcare_MVP\vercel.env.txt
+
+Only one value is still missing:
+NEXT_PUBLIC_API_URL in vercel.env.txt
+
+Set it to your actual Render backend URL, for example:
+https://your-service-name.onrender.com
+
+After importing:
+1. Redeploy Render backend
+2. Redeploy Vercel frontend
+3. Test:
+   - frontend page: https://healthcare-mvp-frontend.vercel.app/admin/login
+   - backend API route: POST https://your-render-backend.onrender.com/admin/login
+
+Notes:
+- The secure access-link and JWT secrets in render.env.txt are newly generated.
+- Since secrets were shared in chat, rotate them again later if this project becomes public.

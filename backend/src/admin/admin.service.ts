@@ -3,6 +3,7 @@ import {
   NotFoundException,
   OnModuleInit,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,6 +14,7 @@ import { Admin } from '../database/entities/admin.entity';
 import { PartnerService } from '../partner/partner.service';
 import { RegisterPartnerDto } from '../partner/dto/register-partner.dto';
 import { AdminLoginDto } from './dto/admin-login.dto';
+import { GenerateBdoLinkDto } from './dto/generate-bdo-link.dto';
 
 @Injectable()
 export class AdminService implements OnModuleInit {
@@ -77,6 +79,7 @@ export class AdminService implements OnModuleInit {
       id: partner.id,
       name: partner.name,
       phone: partner.phone,
+      bdoId: partner.bdoId ?? null,
       role: partner.role,
       city: partner.city,
       area: partner.area,
@@ -94,5 +97,23 @@ export class AdminService implements OnModuleInit {
     }
 
     return this.authService.generatePartnerAccessLink(partner);
+  }
+
+  generateBdoLink(body: GenerateBdoLinkDto) {
+    const bdoId = (body.bdoId ?? body.bdo_id)?.trim();
+
+    if (!bdoId) {
+      throw new BadRequestException('bdo_id is required');
+    }
+
+    const baseUrl =
+      this.configService.get<string>('APP_FRONTEND_URL') ??
+      this.configService.get<string>('FRONTEND_URL')?.split(',')[0]?.trim() ??
+      '';
+
+    const normalized = baseUrl.replace(/\/$/, '');
+    const url = `${normalized}/register?bdo_id=${encodeURIComponent(bdoId)}`;
+
+    return { url };
   }
 }

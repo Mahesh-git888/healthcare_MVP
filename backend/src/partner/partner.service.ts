@@ -26,6 +26,7 @@ export class PartnerService {
     const partner = this.partnerRepository.create({
       ...body,
       phone: normalizedPhone,
+      bdoId: (body.bdoId ?? body.bdo_id)?.trim() || null,
     });
     const savedPartner = await this.partnerRepository.save(partner);
 
@@ -58,9 +59,9 @@ export class PartnerService {
     const partner = this.partnerRepository.create({
       ...body,
       phone: normalizedPhone,
+      bdoId: (body.bdoId ?? body.bdo_id)?.trim() || null,
     });
 
     return this.partnerRepository.save(partner);
   }
 }
-

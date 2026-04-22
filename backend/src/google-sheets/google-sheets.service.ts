@@ -42,7 +42,7 @@ export class GoogleSheetsService {
     try {
       await sheets.spreadsheets.values.append({
         spreadsheetId,
-        range: `${sheetName}!A:L`,
+        range: `${sheetName}!A:M`,
         valueInputOption: 'RAW',
         requestBody: {
           values: [
@@ -59,6 +59,7 @@ export class GoogleSheetsService {
               lead.shiftType ?? '',
               'NEW',
               '',
+              partner.bdoId ?? '',
             ],
           ],
         },
