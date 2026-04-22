@@ -99,7 +99,10 @@ export class AuthService {
       },
     );
 
-    const frontendUrl = this.configService.get<string>('FRONTEND_URL') ?? '';
+    const frontendUrl =
+      this.configService.get<string>('APP_FRONTEND_URL') ??
+      this.configService.get<string>('FRONTEND_URL')?.split(',')[0]?.trim() ??
+      '';
     const accessLink = `${frontendUrl.replace(/\/$/, '')}/access?token=${token}`;
 
     return {
