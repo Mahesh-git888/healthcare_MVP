@@ -37,7 +37,7 @@ export class Lead {
   @Column({ name: 'service_type' })
   serviceType!: string;
 
-  @Column({ name: 'shift_type', nullable: true })
+ @Column({ name: 'shift_type', type: 'varchar', nullable: true })
   shiftType!: string | null;
 
   @Column({ default: 'NEW' })
