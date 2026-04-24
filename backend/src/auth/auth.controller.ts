@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AccessLinkLoginDto } from './dto/access-link-login.dto';
 import { PhoneLoginDto } from './dto/phone-login.dto';
 import { AuthService } from './auth.service';
@@ -13,6 +13,7 @@ export class AuthController {
   ) {}
 
   @Post('access-link-login')
+  @HttpCode(HttpStatus.OK)
   accessLinkLogin(@Body() body: AccessLinkLoginDto) {
     return this.authService.exchangeAccessLinkToken(body.token);
   }
@@ -24,6 +25,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   login(@Body() body: PhoneLoginDto) {
     return this.authService.loginPartnerByPhone(body.phone);
   }
