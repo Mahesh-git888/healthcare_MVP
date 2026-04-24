@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { compare, hash } from 'bcryptjs';
 import { Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
+import { BdoService } from '../bdo/bdo.service';
 import { Admin } from '../database/entities/admin.entity';
 import { PartnerService } from '../partner/partner.service';
 import { RegisterPartnerDto } from '../partner/dto/register-partner.dto';
@@ -23,6 +24,7 @@ export class AdminService implements OnModuleInit {
     private readonly adminRepository: Repository<Admin>,
     private readonly authService: AuthService,
     private readonly partnerService: PartnerService,
+    private readonly bdoService: BdoService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -99,21 +101,17 @@ export class AdminService implements OnModuleInit {
     return this.authService.generatePartnerAccessLink(partner);
   }
 
-  generateBdoLink(body: GenerateBdoLinkDto) {
+  listBdos() {
+    return this.bdoService.listBdos();
+  }
+
+  async generateBdoLink(body: GenerateBdoLinkDto) {
     const bdoId = (body.bdoId ?? body.bdo_id)?.trim();
 
     if (!bdoId) {
       throw new BadRequestException('bdo_id is required');
     }
 
-    const baseUrl =
-      this.configService.get<string>('APP_FRONTEND_URL') ??
-      this.configService.get<string>('FRONTEND_URL')?.split(',')[0]?.trim() ??
-      '';
-
-    const normalized = baseUrl.replace(/\/$/, '');
-    const url = `${normalized}/register?bdo_id=${encodeURIComponent(bdoId)}`;
-
-    return { url };
+    return this.bdoService.generateWhatsAppLink(bdoId);
   }
 }

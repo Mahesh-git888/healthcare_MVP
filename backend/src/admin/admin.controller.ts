@@ -34,6 +34,12 @@ export class AdminController {
   }
 
   @UseGuards(AdminJwtAuthGuard)
+  @Get('bdos')
+  getBdos() {
+    return this.adminService.listBdos();
+  }
+
+  @UseGuards(AdminJwtAuthGuard)
   @Post('generate-link/:id')
   generateAccessLink(@Param('id') partnerId: string) {
     return this.adminService.generateAccessLink(partnerId);

@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
+import { BdoModule } from './bdo/bdo.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { Admin } from './database/entities/admin.entity';
+import { Bdo } from './database/entities/bdo.entity';
 import { Partner } from './database/entities/partner.entity';
 import { EarningsModule } from './earnings/earnings.module';
 import { GoogleSheetsModule } from './google-sheets/google-sheets.module';
@@ -21,13 +23,14 @@ import { PartnerModule } from './partner/partner.module';
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         url: configService.getOrThrow<string>('DATABASE_URL'),
-        entities: [Admin, Partner],
+        entities: [Admin, Partner, Bdo],
         autoLoadEntities: true,
         synchronize: true,
         ssl: shouldUseSsl(configService.get<string>('DATABASE_URL')),
       }),
     }),
     AuthModule,
+    BdoModule,
     PartnerModule,
     LeadModule,
     AdminModule,
