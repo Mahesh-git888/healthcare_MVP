@@ -145,9 +145,6 @@ def normalize_state(value: Optional[str]) -> Optional[str]:
     if not normalized:
         return None
 
-    if normalized in {"0", "all", "show all cities"}:
-        return "ALL"
-
     for state_name in STATE_CITY_TO_AREA_ID:
         if normalize_choice(state_name) == normalized:
             return state_name
@@ -193,6 +190,11 @@ def normalize_referral_code(value: Optional[str]) -> Optional[str]:
     return None
 
 
+def first_name(value: Optional[str]) -> str:
+    parts = re.sub(r"\s+", " ", (value or "").strip()).split(" ")
+    return parts[0] if parts and parts[0] else "there"
+
+
 def build_numbered_menu(options: List[str], heading: str) -> str:
     lines = [heading]
     for index, option in enumerate(options, start=1):
@@ -228,8 +230,9 @@ def get_optional_agent_var(context, key: str, default: str = "") -> str:
 
 
 def build_main_menu(name: str) -> str:
+    short_name = first_name(name)
     return (
-        f"Hi {name}!\n"
+        f"Hi {short_name}!\n"
         "1) Submit a patient lead\n"
         "2) Wallet\n"
         "3) Change language\n"
@@ -310,6 +313,18 @@ class CaptureReferralCode(SarvamTool):
             )
 
         try_set_optional_agent_var(context, "referral_bdo_id", referral_code)
+        phone = normalize_phone(get_optional_agent_var(context, "partner_phone"))
+
+        if len(phone) == 10:
+            try:
+                async with httpx.AsyncClient(timeout=15) as client:
+                    response = await client.post(
+                        f"{BACKEND_URL}/auth/link-referral",
+                        json={"phone": phone, "bdoId": referral_code},
+                    )
+                response.raise_for_status()
+            except Exception:
+                pass
         return SarvamToolOutput(
             message_to_user=f"Referral ID {referral_code} linked successfully ✅",
             context=context,
@@ -356,36 +371,23 @@ class SwitchLanguage(SarvamTool):
 
 class GetStates(SarvamTool):
     async def run(self, context: SarvamToolContext) -> SarvamToolOutput:
-        state_options = ["Show all cities"] + STATE_ORDER
         return SarvamToolOutput(
             message_to_user=build_numbered_menu(
-                state_options,
-                "Choose a state first, or show all cities directly. Reply with a number:",
+                STATE_ORDER,
+                "Please choose your state. Reply with a number:",
             ),
             context=context,
         )
 
 
 class GetCitiesForState(SarvamTool):
-    state: str = Field(description="State name, number, or all")
+    state: str = Field(description="State name or menu number")
 
     async def run(self, context: SarvamToolContext) -> SarvamToolOutput:
         state_name = normalize_state(self.state)
         if not state_name:
             return SarvamToolOutput(
                 message_to_user="Please choose a valid state option.",
-                context=context,
-            )
-
-        if state_name == "ALL":
-            cities = sorted(
-                {city.title() for state_cities in STATE_CITY_TO_AREA_ID.values() for city in state_cities.keys()}
-            )
-            return SarvamToolOutput(
-                message_to_user=build_numbered_menu(
-                    cities,
-                    "Please choose your city. Reply with a number:",
-                ),
                 context=context,
             )
 
@@ -442,11 +444,23 @@ class RegisterPartner(SarvamTool):
             try_set_optional_agent_var(context, "partner_name", partner.get("name") or "there")
             try_set_optional_agent_var(context, "partner_city", partner.get("city") or "")
             try_set_optional_agent_var(context, "partner_role", partner.get("role") or "")
+
+            referral_bdo_id = normalize_referral_code(self.bdo_id) or normalize_referral_code(
+                get_optional_agent_var(context, "referral_bdo_id")
+            )
+            if referral_bdo_id:
+                try:
+                    async with httpx.AsyncClient(timeout=15) as client:
+                        response = await client.post(
+                            f"{BACKEND_URL}/auth/link-referral",
+                            json={"phone": phone, "bdoId": referral_bdo_id},
+                        )
+                    response.raise_for_status()
+                except Exception:
+                    pass
+
             return SarvamToolOutput(
-                message_to_user=(
-                    f"Welcome back, {partner.get('name') or 'there'}.\n"
-                    + build_main_menu(partner.get("name") or "there")
-                ),
+                message_to_user=build_main_menu(partner.get("name") or "there"),
                 context=context,
             )
 
@@ -469,7 +483,13 @@ class RegisterPartner(SarvamTool):
                 context=context,
             )
 
-        state_name = normalize_state(self.state) if self.state else "ALL"
+        state_name = normalize_state(self.state) if self.state else None
+        if not state_name:
+            return SarvamToolOutput(
+                message_to_user="Please choose your state first from the numbered menu.",
+                context=context,
+            )
+
         resolved_city = resolve_city(self.city, state_name)
 
         if not resolved_city:
@@ -524,7 +544,7 @@ class RegisterPartner(SarvamTool):
 
         return SarvamToolOutput(
             message_to_user=(
-                f"Welcome, {partner.get('name') or self.name.strip()}.\n"
+                "Registration completed successfully.\n"
                 + build_main_menu(partner.get("name") or self.name.strip())
             ),
             context=context,

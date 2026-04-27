@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Partner } from '../database/entities/partner.entity';
@@ -85,6 +85,59 @@ export class PartnerService {
     });
 
     return this.partnerRepository.save(partner);
+  }
+
+  async linkReferralByPhone(phone: string, bdoId: string) {
+    const normalizedPhone = normalizePhone(phone);
+    const normalizedBdoId = normalizeOptionalString(bdoId)?.toUpperCase();
+
+    if (normalizedPhone.length !== 10) {
+      throw new BadRequestException('A valid 10-digit phone number is required');
+    }
+
+    if (!normalizedBdoId) {
+      throw new BadRequestException('bdo_id is required');
+    }
+
+    await this.bdoService.validateEmployeeId(normalizedBdoId);
+
+    const partner = await this.partnerRepository.findOne({
+      where: { phone: normalizedPhone },
+    });
+
+    if (!partner) {
+      return {
+        status: 'pending_partner_registration',
+        phone: normalizedPhone,
+        bdoId: normalizedBdoId,
+      };
+    }
+
+    if (!partner.bdoId) {
+      partner.bdoId = normalizedBdoId;
+      await this.partnerRepository.save(partner);
+
+      return {
+        status: 'linked',
+        partnerId: partner.id,
+        bdoId: normalizedBdoId,
+      };
+    }
+
+    if (partner.bdoId === normalizedBdoId) {
+      return {
+        status: 'already_linked',
+        partnerId: partner.id,
+        bdoId: partner.bdoId,
+      };
+    }
+
+    return {
+      status: 'existing_mapping_preserved',
+      partnerId: partner.id,
+      bdoId: partner.bdoId,
+      requestedBdoId: normalizedBdoId,
+    };
   }
 }
 

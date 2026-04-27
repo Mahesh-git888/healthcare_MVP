@@ -1,5 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AccessLinkLoginDto } from './dto/access-link-login.dto';
+import { LinkReferralDto } from './dto/link-referral.dto';
 import { PhoneLoginDto } from './dto/phone-login.dto';
 import { AuthService } from './auth.service';
 import { PartnerService } from '../partner/partner.service';
@@ -28,5 +29,14 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   login(@Body() body: PhoneLoginDto) {
     return this.authService.loginPartnerByPhone(body.phone);
+  }
+
+  @Post('link-referral')
+  @HttpCode(HttpStatus.OK)
+  linkReferral(@Body() body: LinkReferralDto) {
+    return this.partnerService.linkReferralByPhone(
+      body.phone,
+      body.bdoId ?? body.bdo_id ?? '',
+    );
   }
 }
