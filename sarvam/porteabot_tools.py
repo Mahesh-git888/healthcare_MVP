@@ -240,6 +240,15 @@ def build_main_menu(name: str) -> str:
     )
 
 
+class ShowMainMenu(SarvamTool):
+    async def run(self, context: SarvamToolContext) -> SarvamToolOutput:
+        partner_name = get_optional_agent_var(context, "partner_name", "there")
+        return SarvamToolOutput(
+            message_to_user=build_main_menu(partner_name),
+            context=context,
+        )
+
+
 class OnStart(SarvamOnStartTool):
     async def run(self, context: SarvamOnStartToolContext):
         context.set_initial_state_name("Main")
@@ -644,3 +653,4 @@ GetCitiesForState.model_rebuild()
 RegisterPartner.model_rebuild()
 SubmitLead.model_rebuild()
 GetWallet.model_rebuild()
+ShowMainMenu.model_rebuild()

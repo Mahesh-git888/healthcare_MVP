@@ -11,6 +11,7 @@ This bot reuses the NestJS backend for:
 These backend endpoints must be reachable from Sarvam:
 - `POST /auth/login` with `{ phone }`
 - `POST /auth/register` with `{ name, phone, role, city, organizationName?, bdoId? }`
+- `POST /auth/link-referral` with `{ phone, bdoId }`
 - `POST /leads` with Bearer JWT and `{ patientName, phone, serviceType?, city? }`
 - `GET /partner/earnings` with Bearer JWT
 
@@ -32,6 +33,7 @@ Paste `sarvam/porteabot_tools.py` into Custom Tools.
 
 Enable these tools in the `Main` state:
 - `CaptureReferralCode`
+- `ShowMainMenu`
 - `GetLanguageOptions`
 - `SwitchLanguage`
 - `GetStates`
@@ -52,9 +54,10 @@ Enable `OnStart` as the startup tool.
 
 - If the sender phone is available in `OnStart`, the bot should use it directly
 - If the partner already exists, greet them by name and show the menu
-- If the partner does not exist, start onboarding with name -> role -> organization optional -> city
+- If the partner does not exist, start onboarding with name -> role -> organization optional -> state -> city
 - Do not ask for address or area
 - Lead capture should ask only for patient name, patient phone, and optional service type
+- If a deep link contains a BDO code, the bot should capture it and link it to the partner by phone when possible
 
 ## BDO deep links
 

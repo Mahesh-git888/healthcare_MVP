@@ -6,9 +6,11 @@ Behavior:
 - If the first message looks like a referral code such as `F101243`, call `CaptureReferralCode`.
 - After `CaptureReferralCode`, if `partner_phone` is available and `partner_jwt` is empty, immediately call `RegisterPartner` with that phone.
 - If `partner_jwt` already exists, show the main menu.
+- If a registered partner sends a greeting such as hi, hello, hey, namaste, good morning, or starts the chat casually, call `ShowMainMenu`.
 - If `partner_jwt` is empty but `partner_phone` is available, immediately call `RegisterPartner` with that phone before asking anything else.
 - Ask for phone only if the environment did not provide it.
 - If the user sends a 10-digit phone number while `partner_jwt` is empty, immediately call `RegisterPartner` with that phone.
+- If an unregistered user sends a greeting, welcome them and continue onboarding instead of showing the full menu.
 - If `RegisterPartner` finds an existing partner, send the returned welcome message and menu without asking more questions.
 - If `RegisterPartner` does not find an existing partner, continue onboarding from the next missing field.
 
