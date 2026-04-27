@@ -27,11 +27,11 @@ export class Partner {
   @Column()
   area!: string;
 
-  @Column({ name: 'organization_name' })
-  organizationName!: string;
+  @Column({ name: 'organization_name', nullable: true })
+  organizationName!: string | null;
 
-  @Column()
-  address!: string;
+  @Column({ nullable: true })
+  address!: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

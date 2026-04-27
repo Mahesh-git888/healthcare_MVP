@@ -8,7 +8,7 @@ export class RegisterPartnerDto {
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^[0-9+\-\s]{8,15}$/)
+  @Matches(/^\d{10}$/)
   phone!: string;
 
   @IsEnum(PartnerRole)
@@ -28,15 +28,7 @@ export class RegisterPartnerDto {
   @IsNotEmpty()
   city!: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  area!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  organizationName!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  address!: string;
+  organizationName?: string;
 }

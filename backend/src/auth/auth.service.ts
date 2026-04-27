@@ -132,7 +132,8 @@ export class AuthService {
 }
 
 function normalizePhone(phone: string) {
-  return phone.trim();
+  const digits = phone.replace(/\D+/g, '');
+  return digits.length > 10 ? digits.slice(-10) : digits;
 }
 
 function serializePartner(partner: Partner) {
@@ -144,8 +145,8 @@ function serializePartner(partner: Partner) {
     role: partner.role,
     city: partner.city,
     area: partner.area,
-    organizationName: partner.organizationName,
-    address: partner.address,
+    organizationName: partner.organizationName ?? null,
+    address: partner.address ?? null,
     createdAt: partner.createdAt,
   };
 }

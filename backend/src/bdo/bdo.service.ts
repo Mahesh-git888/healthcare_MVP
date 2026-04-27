@@ -101,11 +101,7 @@ export class BdoService implements OnModuleInit {
     const bdo = await this.validateEmployeeId(employeeId);
     const agentPhone =
       this.configService.get<string>('WHATSAPP_AGENT_PHONE')?.replace(/\D+/g, '') ??
-      '';
-
-    if (!agentPhone) {
-      throw new BadRequestException('WHATSAPP_AGENT_PHONE is not configured');
-    }
+      '919345884291';
 
     return {
       bdo: serializeBdo(bdo),

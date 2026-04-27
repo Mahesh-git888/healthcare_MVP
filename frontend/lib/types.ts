@@ -8,8 +8,18 @@ export interface Partner {
   role: PartnerRole;
   city: string;
   area: string;
-  organizationName: string;
-  address: string;
+  organizationName?: string | null;
+  address?: string | null;
+  createdAt: string;
+}
+
+export interface Bdo {
+  id: string;
+  employeeId: string;
+  name: string;
+  email: string;
+  phone: string;
+  city: string;
   createdAt: string;
 }
 
@@ -33,10 +43,8 @@ export interface AdminSessionResponse {
 export interface LeadPayload {
   patientName: string;
   phone: string;
-  city: string;
-  area: string;
-  serviceType: string;
-  shiftType?: string;
+  serviceType?: string;
+  city?: string;
 }
 
 export interface CreatePartnerPayload {
@@ -45,9 +53,7 @@ export interface CreatePartnerPayload {
   role: PartnerRole;
   bdoId?: string;
   city: string;
-  area: string;
-  organizationName: string;
-  address: string;
+  organizationName?: string;
 }
 
 export interface PartnerEarningsResponse {

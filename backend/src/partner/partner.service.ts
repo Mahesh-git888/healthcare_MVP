@@ -16,8 +16,8 @@ export class PartnerService {
   ) {}
 
   async register(body: RegisterPartnerDto) {
-    const normalizedPhone = body.phone.trim();
-    const normalizedBdoId = (body.bdoId ?? body.bdo_id)?.trim().toUpperCase();
+    const normalizedPhone = normalizePhone(body.phone);
+    const normalizedBdoId = normalizeOptionalString(body.bdoId ?? body.bdo_id)?.toUpperCase();
     const existingPartner = await this.partnerRepository.findOne({
       where: { phone: normalizedPhone },
     });
@@ -31,8 +31,13 @@ export class PartnerService {
     }
 
     const partner = this.partnerRepository.create({
-      ...body,
+      name: body.name.trim(),
       phone: normalizedPhone,
+      role: body.role,
+      city: body.city.trim(),
+      area: body.city.trim(),
+      organizationName: normalizeOptionalString(body.organizationName),
+      address: null,
       bdoId: normalizedBdoId || null,
     });
     const savedPartner = await this.partnerRepository.save(partner);
@@ -54,8 +59,8 @@ export class PartnerService {
   }
 
   async createByAdmin(body: RegisterPartnerDto) {
-    const normalizedPhone = body.phone.trim();
-    const normalizedBdoId = (body.bdoId ?? body.bdo_id)?.trim().toUpperCase();
+    const normalizedPhone = normalizePhone(body.phone);
+    const normalizedBdoId = normalizeOptionalString(body.bdoId ?? body.bdo_id)?.toUpperCase();
     const existingPartner = await this.partnerRepository.findOne({
       where: { phone: normalizedPhone },
     });
@@ -69,11 +74,26 @@ export class PartnerService {
     }
 
     const partner = this.partnerRepository.create({
-      ...body,
+      name: body.name.trim(),
       phone: normalizedPhone,
+      role: body.role,
+      city: body.city.trim(),
+      area: body.city.trim(),
+      organizationName: normalizeOptionalString(body.organizationName),
+      address: null,
       bdoId: normalizedBdoId || null,
     });
 
     return this.partnerRepository.save(partner);
   }
+}
+
+function normalizePhone(value: string) {
+  const digits = value.replace(/\D+/g, '');
+  return digits.length > 10 ? digits.slice(-10) : digits;
+}
+
+function normalizeOptionalString(value?: string | null) {
+  const normalized = value?.trim();
+  return normalized ? normalized : null;
 }

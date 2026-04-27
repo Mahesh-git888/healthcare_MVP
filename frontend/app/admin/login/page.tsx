@@ -36,9 +36,9 @@ export default function AdminLoginPage() {
   return (
     <PageShell
       title="Admin login"
-      description="Use your seeded admin credentials to manage partner onboarding and secure access links."
+      description="Use your admin credentials to manage BDO deep links, partner onboarding, and access links."
     >
-      <Card>
+      <Card className="rounded-[28px] border-0 bg-white/90 p-6 shadow-[0_24px_80px_rgba(16,55,74,0.10)]">
         <form className="space-y-4" onSubmit={handleSubmit}>
           <Input
             label="Email"
@@ -65,4 +65,3 @@ export default function AdminLoginPage() {
     </PageShell>
   );
 }
-

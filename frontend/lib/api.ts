@@ -1,5 +1,6 @@
 import {
   AdminSessionResponse,
+  Bdo,
   CreatePartnerPayload,
   LeadPayload,
   PartnerEarningsResponse,
@@ -87,6 +88,12 @@ export function getPartners(token: string) {
   });
 }
 
+export function getBdos(token: string) {
+  return api<Bdo[]>('/admin/bdos', {
+    token,
+  });
+}
+
 export function createPartnerByAdmin(token: string, payload: CreatePartnerPayload) {
   return api<Partner>('/admin/partners', {
     method: 'POST',
@@ -103,6 +110,14 @@ export function generatePartnerLink(token: string, partnerId: string) {
       token,
     },
   );
+}
+
+export function generateBdoLink(token: string, bdoId: string) {
+  return api<{ bdo: Bdo; whatsappLink: string }>('/admin/generate-bdo-link', {
+    method: 'POST',
+    body: JSON.stringify({ bdoId }),
+    token,
+  });
 }
 
 export function getPartnerEarnings(token: string) {

@@ -1,18 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, Suspense, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSearchParams } from 'next/navigation';
+import { FormEvent, Suspense, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { PageShell } from '@/components/layout/page-shell';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Notice } from '@/components/ui/notice';
 import { registerPartner } from '@/lib/api';
 import { setPartnerSession } from '@/lib/auth';
+import { ALL_CITIES, STATE_CITY_OPTIONS, getCitiesForState } from '@/lib/location-options';
 import { PartnerRole } from '@/lib/types';
 
 const roles: PartnerRole[] = ['Nurse', 'Paramedic', 'Physiotherapist'];
@@ -21,11 +20,14 @@ const initialState = {
   name: '',
   phone: '',
   role: 'Nurse' as PartnerRole,
+  state: '',
   city: '',
-  area: '',
   organizationName: '',
-  address: '',
 };
+
+function normalizePhone(value: string) {
+  return value.replace(/\D+/g, '').slice(0, 10);
+}
 
 export default function RegisterPage() {
   return (
@@ -43,14 +45,34 @@ function RegisterContent() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const cities = useMemo(
+    () => (form.state ? getCitiesForState(form.state) : ALL_CITIES),
+    [form.state],
+  );
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
+
+    if (form.phone.length !== 10) {
+      setError('Please enter a valid 10-digit phone number.');
+      return;
+    }
+
+    if (!form.city) {
+      setError('Please choose a city.');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const response = await registerPartner({
-        ...form,
+        name: form.name.trim(),
+        phone: form.phone,
+        role: form.role,
+        city: form.city,
+        organizationName: form.organizationName.trim() || undefined,
         ...(bdoId ? { bdoId } : {}),
       });
       setPartnerSession(response.accessToken, response.partner);
@@ -65,7 +87,7 @@ function RegisterContent() {
   return (
     <PageShell
       title="Partner registration"
-      description="Register your organization details once, then submit patient leads from the same secure flow."
+      description="Register with the minimum details needed so you can begin sharing patient leads quickly."
       footer={
         <>
           Already registered?{' '}
@@ -75,7 +97,7 @@ function RegisterContent() {
         </>
       }
     >
-      <Card>
+      <Card className="rounded-[28px] border-0 bg-white/90 p-6 shadow-[0_24px_80px_rgba(16,55,74,0.10)]">
         <form className="space-y-4" onSubmit={handleSubmit}>
           <Input
             label="Full name"
@@ -84,13 +106,20 @@ function RegisterContent() {
             placeholder="Enter your full name"
             required
           />
+
           <Input
             label="Phone number"
             value={form.phone}
-            onChange={(event) => setForm({ ...form, phone: event.target.value })}
-            placeholder="Enter registered phone number"
+            onChange={(event) =>
+              setForm({ ...form, phone: normalizePhone(event.target.value) })
+            }
+            placeholder="10-digit phone number"
+            inputMode="numeric"
+            pattern="\d{10}"
+            maxLength={10}
             required
           />
+
           <Select
             label="Role"
             value={form.role}
@@ -104,37 +133,44 @@ function RegisterContent() {
               </option>
             ))}
           </Select>
-          <Input
+
+          <Select
+            label="State (optional helper)"
+            value={form.state}
+            onChange={(event) => setForm({ ...form, state: event.target.value, city: '' })}
+          >
+            <option value="">Show all cities</option>
+            {STATE_CITY_OPTIONS.map((entry) => (
+              <option key={entry.state} value={entry.state}>
+                {entry.state}
+              </option>
+            ))}
+          </Select>
+
+          <Select
             label="City"
             value={form.city}
             onChange={(event) => setForm({ ...form, city: event.target.value })}
-            placeholder="City"
             required
-          />
+          >
+            <option value="">Select city</option>
+            {cities.map((city) => (
+              <option key={city} value={city}>
+                {city}
+              </option>
+            ))}
+          </Select>
+
           <Input
-            label="Area"
-            value={form.area}
-            onChange={(event) => setForm({ ...form, area: event.target.value })}
-            placeholder="Area / locality"
-            required
-          />
-          <Input
-            label="Organization name"
+            label="Organization name (optional)"
             value={form.organizationName}
             onChange={(event) =>
               setForm({ ...form, organizationName: event.target.value })
             }
             placeholder="Clinic / agency / hospital name"
-            required
-          />
-          <Textarea
-            label="Address"
-            value={form.address}
-            onChange={(event) => setForm({ ...form, address: event.target.value })}
-            placeholder="Full address"
-            required
           />
 
+          {bdoId ? <Notice tone="success">Referral ID linked: {bdoId}</Notice> : null}
           {error ? <Notice tone="error">{error}</Notice> : null}
 
           <Button type="submit" disabled={loading}>
@@ -150,7 +186,7 @@ function RegisterFallback() {
   return (
     <PageShell
       title="Partner registration"
-      description="Register your organization details once, then submit patient leads from the same secure flow."
+      description="Register with the minimum details needed so you can begin sharing patient leads quickly."
     >
       <Card className="text-center">
         <div className="mx-auto h-14 w-14 animate-pulse rounded-full bg-brand-100" />

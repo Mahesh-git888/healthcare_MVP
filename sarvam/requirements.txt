@@ -1,0 +1,6 @@
+# If Sarvam environment does not preinstall dependencies, these are typically required.
+# You may not need this file inside Sarvam itself; it is kept for reference.
+httpx>=0.27.0
+pydantic>=2.0.0
+# sarvam_conv_ai_sdk is provided/installed in Sarvam Agents runtime.
+

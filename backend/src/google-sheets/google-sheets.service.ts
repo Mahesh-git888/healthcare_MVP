@@ -42,24 +42,23 @@ export class GoogleSheetsService {
     try {
       await sheets.spreadsheets.values.append({
         spreadsheetId,
-        range: `${sheetName}!A:M`,
+        range: `${sheetName}!A:L`,
         valueInputOption: 'RAW',
         requestBody: {
           values: [
             [
               new Date().toISOString(),
+              partner.id,
               partner.name,
               partner.phone,
               partner.role,
               lead.city,
-              lead.area,
               lead.patientName,
               lead.phone,
-              lead.serviceType,
-              lead.shiftType ?? '',
+              lead.serviceType ?? '',
               'NEW',
-              '',
               partner.bdoId ?? '',
+              partner.organizationName ?? '',
             ],
           ],
         },

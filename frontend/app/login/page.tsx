@@ -11,6 +11,10 @@ import { Notice } from '@/components/ui/notice';
 import { loginPartner } from '@/lib/api';
 import { setPartnerSession } from '@/lib/auth';
 
+function normalizePhone(value: string) {
+  return value.replace(/\D+/g, '').slice(0, 10);
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [phone, setPhone] = useState('');
@@ -20,6 +24,12 @@ export default function LoginPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
+
+    if (phone.length !== 10) {
+      setError('Please enter a valid 10-digit phone number.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -35,8 +45,8 @@ export default function LoginPage() {
 
   return (
     <PageShell
-      title="Partner phone login"
-      description="Enter the phone number used during onboarding to access the lead submission form."
+      title="Partner login"
+      description="Use your registered 10-digit phone number to continue."
       footer={
         <>
           New here?{' '}
@@ -46,13 +56,16 @@ export default function LoginPage() {
         </>
       }
     >
-      <Card>
+      <Card className="rounded-[28px] border-0 bg-white/90 p-6 shadow-[0_24px_80px_rgba(16,55,74,0.10)]">
         <form className="space-y-4" onSubmit={handleSubmit}>
           <Input
             label="Phone number"
             value={phone}
-            onChange={(event) => setPhone(event.target.value)}
-            placeholder="Enter your phone number"
+            onChange={(event) => setPhone(normalizePhone(event.target.value))}
+            placeholder="10-digit phone number"
+            inputMode="numeric"
+            pattern="\d{10}"
+            maxLength={10}
             required
           />
 
@@ -66,4 +79,3 @@ export default function LoginPage() {
     </PageShell>
   );
 }
-
