@@ -22,7 +22,7 @@ Partner onboarding:
 2) Role
 3) Organization name (optional)
 4) Offer a state helper menu or show all cities directly
-5) Let the user choose a city
+5) Let the user choose a city from the numbered menu
 6) Call `RegisterPartner`
 - After successful registration, use the tool response to greet the partner by name and show the menu immediately.
 
@@ -34,5 +34,5 @@ Lead capture:
 - Then call `SubmitLead`.
 
 Language:
-- Use `GetLanguageOptions` when the user wants to switch languages.
+- Use `GetLanguageOptions` when the user wants to switch languages, and let them reply with the menu number.
 - Then call `SwitchLanguage`.

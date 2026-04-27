@@ -320,7 +320,10 @@ class GetLanguageOptions(SarvamTool):
     async def run(self, context: SarvamToolContext) -> SarvamToolOutput:
         options = [label for _, label, _ in LANGUAGE_OPTIONS]
         return SarvamToolOutput(
-            message_to_user=build_numbered_menu(options, "Please choose your language:"),
+            message_to_user=build_numbered_menu(
+                options,
+                "Please choose your language. Reply with a number:",
+            ),
             context=context,
         )
 
@@ -357,7 +360,7 @@ class GetStates(SarvamTool):
         return SarvamToolOutput(
             message_to_user=build_numbered_menu(
                 state_options,
-                "Choose a state first, or show all cities directly:",
+                "Choose a state first, or show all cities directly. Reply with a number:",
             ),
             context=context,
         )
@@ -379,7 +382,10 @@ class GetCitiesForState(SarvamTool):
                 {city.title() for state_cities in STATE_CITY_TO_AREA_ID.values() for city in state_cities.keys()}
             )
             return SarvamToolOutput(
-                message_to_user=build_numbered_menu(cities, "Please choose your city:"),
+                message_to_user=build_numbered_menu(
+                    cities,
+                    "Please choose your city. Reply with a number:",
+                ),
                 context=context,
             )
 
@@ -388,7 +394,7 @@ class GetCitiesForState(SarvamTool):
         return SarvamToolOutput(
             message_to_user=build_numbered_menu(
                 cities,
-                f"Please choose your city in {state_name}:",
+                f"Please choose your city in {state_name}. Reply with a number:",
             ),
             context=context,
         )

@@ -36,7 +36,7 @@ export function EarningsWidget({ token }: { token: string }) {
   if (error) {
     return (
       <Card className="space-y-2 border border-rose-100 bg-rose-50/60">
-        <p className="text-sm font-semibold text-rose-700">Referral Earnings</p>
+        <p className="text-sm font-semibold text-rose-700">Wallet</p>
         <Notice tone="error">{error}</Notice>
       </Card>
     );
@@ -47,10 +47,10 @@ export function EarningsWidget({ token }: { token: string }) {
       <Card className="flex items-center justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-            Earnings
+            Wallet
           </p>
           <p className="mt-1 font-display text-xl font-semibold text-ink">
-            Referral Earnings
+            Your earnings
           </p>
         </div>
         <div className="h-10 w-10 animate-pulse rounded-2xl bg-slate-100" />
@@ -70,7 +70,7 @@ export function EarningsWidget({ token }: { token: string }) {
           </div>
           <div className="min-w-0">
             <p className="font-display text-xl font-semibold text-slate-700">
-              Referral Earnings
+              Your wallet
             </p>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               {data.message}
@@ -90,10 +90,10 @@ export function EarningsWidget({ token }: { token: string }) {
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-700">
-              Earnings
+              Wallet
             </p>
             <p className="mt-1 font-display text-xl font-semibold text-ink">
-              Referral Earnings
+              Your earnings
             </p>
           </div>
         </div>
@@ -186,4 +186,3 @@ function WalletIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
