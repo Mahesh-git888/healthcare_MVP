@@ -229,11 +229,11 @@ def get_optional_agent_var(context, key: str, default: str = "") -> str:
 
 def build_main_menu(name: str) -> str:
     return (
-        f"Hi {name}! 👋\n"
-        "1) Submit a patient lead 🩺\n"
-        "2) Wallet 💰\n"
-        "3) Change language 🌐\n"
-        "4) Help ℹ️"
+        f"Hi {name}!\n"
+        "1) Submit a patient lead\n"
+        "2) Wallet\n"
+        "3) Change language\n"
+        "4) Help"
     )
 
 
@@ -274,7 +274,9 @@ class OnStart(SarvamOnStartTool):
 
         if response.status_code == 404:
             try_set_agent_var(context, "needs_onboarding", "true", missing)
-            context.set_initial_bot_message("Welcome to Portea 👋\nWhat's your full name?")
+            context.set_initial_bot_message(
+                "Welcome to Portea.\nLet's get you registered.\nWhat's your full name?"
+            )
             return context
 
         if response.status_code not in (200, 201):
@@ -411,6 +413,8 @@ class RegisterPartner(SarvamTool):
                 context=context,
             )
 
+        try_set_optional_agent_var(context, "partner_phone", phone)
+
         try:
             async with httpx.AsyncClient(timeout=15) as client:
                 login_response = await client.post(
@@ -428,11 +432,21 @@ class RegisterPartner(SarvamTool):
             partner = data.get("partner") or {}
             try_set_optional_agent_var(context, "partner_jwt", data.get("accessToken") or "")
             try_set_optional_agent_var(context, "needs_onboarding", "false")
+            try_set_optional_agent_var(context, "partner_phone", phone)
             try_set_optional_agent_var(context, "partner_name", partner.get("name") or "there")
             try_set_optional_agent_var(context, "partner_city", partner.get("city") or "")
             try_set_optional_agent_var(context, "partner_role", partner.get("role") or "")
             return SarvamToolOutput(
-                message_to_user=build_main_menu(partner.get("name") or "there"),
+                message_to_user=(
+                    f"Welcome back, {partner.get('name') or 'there'}.\n"
+                    + build_main_menu(partner.get("name") or "there")
+                ),
+                context=context,
+            )
+
+        if login_response.status_code != 404:
+            return SarvamToolOutput(
+                message_to_user="There was a login issue. Please try again in a moment.",
                 context=context,
             )
 
@@ -494,6 +508,7 @@ class RegisterPartner(SarvamTool):
         partner = data.get("partner") or {}
         try_set_optional_agent_var(context, "partner_jwt", data.get("accessToken") or "")
         try_set_optional_agent_var(context, "needs_onboarding", "false")
+        try_set_optional_agent_var(context, "partner_phone", phone)
         try_set_optional_agent_var(context, "partner_name", partner.get("name") or self.name.strip())
         try_set_optional_agent_var(context, "partner_city", partner.get("city") or final_city)
         try_set_optional_agent_var(context, "partner_role", partner.get("role") or normalized_role)
@@ -502,7 +517,10 @@ class RegisterPartner(SarvamTool):
             try_set_optional_agent_var(context, "referral_bdo_id", referral_bdo_id)
 
         return SarvamToolOutput(
-            message_to_user="Registration successful ✅\n" + build_main_menu(partner.get("name") or self.name.strip()),
+            message_to_user=(
+                f"Welcome, {partner.get('name') or self.name.strip()}.\n"
+                + build_main_menu(partner.get("name") or self.name.strip())
+            ),
             context=context,
         )
 

@@ -5,52 +5,57 @@ import { PageShell } from '@/components/layout/page-shell';
 export default function HomePage() {
   return (
     <PageShell
-      title="Partner referrals with less friction."
-      description="Register quickly, share patient leads in seconds, and check wallet progress without waiting on month-end updates."
+      title="Partner referrals made simpler."
+      description="This portal is for partners to register quickly, submit patient leads with minimal effort, and track wallet visibility without month-end follow-up."
+      headerAction={
+        <Link
+          href="/admin/login"
+          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-200 hover:text-brand-800"
+        >
+          Admin login
+        </Link>
+      }
     >
-      <div className="space-y-4">
-        <Card className="space-y-4 rounded-[28px] border-0 bg-white/90 p-6 shadow-[0_24px_80px_rgba(16,55,74,0.10)]">
-          <div className="rounded-[24px] bg-health-glow p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-700">
-              Built for partner networks
-            </p>
-            <h2 className="mt-3 font-display text-2xl font-semibold text-ink">
-              Simple onboarding. Simple lead sharing. Clearer wallet visibility.
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              The goal is to make it easy for partners to register, send leads fast, and stay aligned with BDO referrals.
-            </p>
-          </div>
-
-          <div className="grid gap-3">
-            <Link
-              href="/register"
-              className="rounded-2xl bg-brand-700 px-5 py-4 text-sm font-semibold text-white transition hover:bg-brand-800"
-            >
-              Register as Partner
-            </Link>
-            <Link
-              href="/login"
-              className="rounded-2xl border border-brand-200 bg-white px-5 py-4 text-sm font-semibold text-brand-800 transition hover:border-brand-300"
-            >
-              Partner Login
-            </Link>
+      <div className="space-y-5">
+        <Card className="rounded-[32px] border-0 bg-white/92 p-6 shadow-[0_24px_80px_rgba(16,55,74,0.10)] sm:p-8">
+          <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+            <div className="space-y-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-700">
+                Partner portal
+              </p>
+              <h2 className="font-display text-3xl font-semibold text-ink sm:text-4xl">
+                Register once. Share leads fast. Check wallet progress anytime.
+              </h2>
+              <p className="max-w-[520px] text-sm leading-7 text-slate-600 sm:text-base">
+                The flow is designed to reduce friction for partners, keep BDO referrals mapped correctly, and make every new lead quick to submit.
+              </p>
+            </div>
+            <div className="rounded-[28px] bg-health-glow p-5">
+              <p className="text-sm font-semibold text-brand-800">What partners can do here</p>
+              <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-700">
+                <li>Register with just the essentials.</li>
+                <li>Submit a patient lead in seconds.</li>
+                <li>See wallet updates without waiting for manual follow-up.</li>
+              </ul>
+            </div>
           </div>
         </Card>
 
-        <Card className="rounded-[28px] border border-slate-200/80 bg-white/80 p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
-            Admin access
-          </p>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            For operations teams managing BDO links, partner records, and secure access flows.
-          </p>
-          <Link
-            href="/admin/login"
-            className="mt-4 inline-block rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-700"
-          >
-            Open Admin Login
-          </Link>
+        <Card className="rounded-[32px] border-0 bg-white/92 p-6 shadow-[0_24px_80px_rgba(16,55,74,0.10)] sm:p-8">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Link
+              href="/register"
+              className="rounded-[24px] bg-brand-700 px-5 py-5 text-sm font-semibold text-white transition hover:bg-brand-800"
+            >
+              Register as partner
+            </Link>
+            <Link
+              href="/login"
+              className="rounded-[24px] border border-brand-200 bg-white px-5 py-5 text-sm font-semibold text-brand-800 transition hover:border-brand-300"
+            >
+              Partner login
+            </Link>
+          </div>
         </Card>
       </div>
     </PageShell>

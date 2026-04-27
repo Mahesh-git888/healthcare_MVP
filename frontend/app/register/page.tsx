@@ -88,6 +88,14 @@ function RegisterContent() {
     <PageShell
       title="Partner registration"
       description="Register with the minimum details needed so you can begin sharing patient leads quickly."
+      headerAction={
+        <Link
+          href="/admin/login"
+          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+        >
+          Admin
+        </Link>
+      }
       footer={
         <>
           Already registered?{' '}

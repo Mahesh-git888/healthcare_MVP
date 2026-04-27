@@ -47,6 +47,14 @@ export default function LoginPage() {
     <PageShell
       title="Partner login"
       description="Use your registered 10-digit phone number to continue."
+      headerAction={
+        <Link
+          href="/admin/login"
+          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+        >
+          Admin
+        </Link>
+      }
       footer={
         <>
           New here?{' '}
