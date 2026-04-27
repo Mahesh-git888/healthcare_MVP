@@ -84,9 +84,7 @@ export class AdminService implements OnModuleInit {
       bdoId: partner.bdoId ?? null,
       role: partner.role,
       city: partner.city,
-      area: partner.area,
       organizationName: partner.organizationName,
-      address: partner.address,
       createdAt: partner.createdAt,
     }));
   }

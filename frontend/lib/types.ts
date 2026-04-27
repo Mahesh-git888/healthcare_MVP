@@ -7,9 +7,7 @@ export interface Partner {
   bdoId?: string | null;
   role: PartnerRole;
   city: string;
-  area: string;
   organizationName?: string | null;
-  address?: string | null;
   createdAt: string;
 }
 

@@ -27,17 +27,10 @@ export class Partner {
   @Column()
   area!: string;
 
-<<<<<<< HEAD
-  @Column({ name: 'organization_name', nullable: true })
-  organizationName!: string | null;
-
-  @Column({ nullable: true })
-=======
   @Column({ name: 'organization_name', type: 'varchar', nullable: true })
   organizationName!: string | null;
 
   @Column({ type: 'text', nullable: true })
->>>>>>> c107e18 (Fix nullable TypeORM column types for Postgres)
   address!: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
