@@ -4,6 +4,8 @@
 
 :root {
   color-scheme: light;
+  --font-manrope: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-outfit: "Trebuchet MS", "Avenir Next", "Segoe UI", sans-serif;
 }
 
 html {
@@ -27,4 +29,3 @@ a {
   color: inherit;
   text-decoration: none;
 }
-

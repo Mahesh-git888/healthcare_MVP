@@ -34,10 +34,10 @@ export class Lead {
   @Column()
   area!: string;
 
-  @Column({ name: 'service_type' })
-  serviceType!: string;
+  @Column({ name: 'service_type', type: 'varchar', nullable: true })
+  serviceType!: string | null;
 
- @Column({ name: 'shift_type', type: 'varchar', nullable: true })
+  @Column({ name: 'shift_type', type: 'varchar', nullable: true })
   shiftType!: string | null;
 
   @Column({ default: 'NEW' })
@@ -46,4 +46,3 @@ export class Lead {
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 }
-

@@ -5,20 +5,32 @@ import { useRouter } from 'next/navigation';
 import { PageShell } from '@/components/layout/page-shell';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Notice } from '@/components/ui/notice';
 import { EarningsWidget } from '@/components/earnings-widget';
 import { clearPartnerSession, getPartnerSession } from '@/lib/auth';
 import { submitLead } from '@/lib/api';
 
+const serviceOptions = [
+  '',
+  'Nurse attendant',
+  'Physio therapist',
+  'Nurse resident',
+  'Visiting nurse',
+  'Equipment sale',
+  'Equipment rental',
+];
+
 const initialLead = {
   patientName: '',
   phone: '',
-  city: '',
-  area: '',
   serviceType: '',
-  shiftType: '',
 };
+
+function normalizePhone(value: string) {
+  return value.replace(/\D+/g, '').slice(0, 10);
+}
 
 export default function SubmitLeadPage() {
   const router = useRouter();
@@ -52,14 +64,20 @@ export default function SubmitLeadPage() {
       return;
     }
 
+    if (lead.phone.length !== 10) {
+      setError('Please enter a valid 10-digit patient phone number.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setMessage('');
 
     try {
       const response = await submitLead(session.token, {
-        ...lead,
-        shiftType: lead.shiftType || undefined,
+        patientName: lead.patientName.trim(),
+        phone: lead.phone,
+        serviceType: lead.serviceType || undefined,
       });
       setMessage(`${response.message}. Status: ${response.status}`);
       setLead(initialLead);
@@ -91,11 +109,12 @@ export default function SubmitLeadPage() {
   return (
     <PageShell
       title="Submit a patient lead"
-      description="Captured leads are validated by the backend and appended to the referral sheet instantly."
+      description="Only the key patient details are needed. Your registered city will be used automatically."
     >
       <div className="space-y-4">
         {partnerToken ? <EarningsWidget token={partnerToken} /> : null}
-        <Card className="space-y-3">
+
+        <Card className="space-y-3 rounded-[28px] border-0 bg-white/90 p-6 shadow-[0_24px_80px_rgba(16,55,74,0.10)]">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-700">
@@ -115,7 +134,7 @@ export default function SubmitLeadPage() {
           </div>
         </Card>
 
-        <Card>
+        <Card className="rounded-[28px] border-0 bg-white/90 p-6 shadow-[0_24px_80px_rgba(16,55,74,0.10)]">
           <form className="space-y-4" onSubmit={handleSubmit}>
             <Input
               label="Patient name"
@@ -126,44 +145,36 @@ export default function SubmitLeadPage() {
               placeholder="Patient full name"
               required
             />
+
             <Input
               label="Patient phone"
               value={lead.phone}
-              onChange={(event) => setLead({ ...lead, phone: event.target.value })}
-              placeholder="Patient phone number"
+              onChange={(event) =>
+                setLead({ ...lead, phone: normalizePhone(event.target.value) })
+              }
+              placeholder="10-digit patient phone number"
+              inputMode="numeric"
+              pattern="\d{10}"
+              maxLength={10}
               required
             />
-            <Input
-              label="City"
-              value={lead.city}
-              onChange={(event) => setLead({ ...lead, city: event.target.value })}
-              placeholder="City"
-              required
-            />
-            <Input
-              label="Area"
-              value={lead.area}
-              onChange={(event) => setLead({ ...lead, area: event.target.value })}
-              placeholder="Area / locality"
-              required
-            />
-            <Input
-              label="Service type"
+
+            <Select
+              label="Service type (optional)"
               value={lead.serviceType}
               onChange={(event) =>
                 setLead({ ...lead, serviceType: event.target.value })
               }
-              placeholder="ICU care / physiotherapy / nursing care"
-              required
-            />
-            <Input
-              label="Shift type (optional)"
-              value={lead.shiftType}
-              onChange={(event) =>
-                setLead({ ...lead, shiftType: event.target.value })
-              }
-              placeholder="Day shift / night shift / 24 hours"
-            />
+            >
+              <option value="">Select later / skip for now</option>
+              {serviceOptions
+                .filter(Boolean)
+                .map((service) => (
+                  <option key={service} value={service}>
+                    {service}
+                  </option>
+                ))}
+            </Select>
 
             {message ? <Notice tone="success">{message}</Notice> : null}
             {error ? <Notice tone="error">{error}</Notice> : null}

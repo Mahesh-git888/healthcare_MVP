@@ -31,17 +31,21 @@ export class LeadService {
     const lead = this.leadRepository.create({
       partner,
       bdoId: partner.bdoId ?? null,
-      patientName: body.patientName,
-      patientPhone: body.phone,
-      city: body.city,
-      area: body.area,
-      serviceType: body.serviceType,
-      shiftType: body.shiftType?.trim() || null,
+      patientName: body.patientName.trim(),
+      patientPhone: normalizePhone(body.phone),
+      city: body.city?.trim() || partner.city,
+      area: body.city?.trim() || partner.city,
+      serviceType: body.serviceType?.trim() || null,
+      shiftType: null,
       status: 'NEW',
     });
 
     const savedLead = await this.leadRepository.save(lead);
-    await this.googleSheetsService.appendLead(partner, body);
+    await this.googleSheetsService.appendLead(partner, {
+      ...body,
+      phone: normalizePhone(body.phone),
+      city: body.city?.trim() || partner.city,
+    });
 
     return {
       message: 'Lead submitted successfully',
@@ -49,4 +53,9 @@ export class LeadService {
       leadId: savedLead.id,
     };
   }
+}
+
+function normalizePhone(value: string) {
+  const digits = value.replace(/\D+/g, '');
+  return digits.length > 10 ? digits.slice(-10) : digits;
 }
