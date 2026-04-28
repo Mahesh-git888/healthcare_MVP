@@ -27,6 +27,9 @@ export class Partner {
   @Column()
   area!: string;
 
+  @Column({ name: 'language_preference', type: 'varchar', length: 32, nullable: true })
+  languagePreference!: string | null;
+
   @Column({ name: 'organization_name', type: 'varchar', nullable: true })
   organizationName!: string | null;
 

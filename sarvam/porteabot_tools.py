@@ -54,6 +54,17 @@ ALLOWED_SERVICES = {
     "equipment rental": "Equipment rental",
 }
 
+PRIMARY_CITY_OPTIONS = [
+    "Bangalore",
+    "Hyderabad",
+    "Kolkata",
+    "NCR",
+    "Pune",
+    "Chennai",
+    "Mumbai",
+    "My city is not listed",
+]
+
 STATE_ORDER = [
     "Karnataka",
     "Maharashtra",
@@ -117,8 +128,12 @@ LANGUAGE_OPTIONS = [
     ("8", "Gujarati", getattr(SarvamToolLanguageName, "GUJARATI")),
     ("9", "Bengali", getattr(SarvamToolLanguageName, "BENGALI")),
     ("10", "Punjabi", getattr(SarvamToolLanguageName, "PUNJABI")),
-    ("11", "Odia", getattr(SarvamToolLanguageName, "ODIA", getattr(SarvamToolLanguageName, "ENGLISH"))),
 ]
+
+LANGUAGE_OPTION_BY_LABEL = {
+    label.lower(): (label, language_name)
+    for _, label, language_name in LANGUAGE_OPTIONS
+}
 
 
 def normalize_phone(raw: str) -> str:
@@ -138,6 +153,18 @@ def normalize_role(value: Optional[str]) -> Optional[str]:
 
 def normalize_service(value: Optional[str]) -> Optional[str]:
     return ALLOWED_SERVICES.get(normalize_choice(value))
+
+
+def normalize_language(value: Optional[str]) -> Optional[str]:
+    normalized = normalize_choice(value)
+    if not normalized:
+        return None
+
+    for key, label, _ in LANGUAGE_OPTIONS:
+        if normalized == key or normalized == label.lower():
+            return label
+
+    return None
 
 
 def normalize_state(value: Optional[str]) -> Optional[str]:
@@ -162,7 +189,7 @@ def resolve_city(city: Optional[str], state: Optional[str] = None):
     if not normalized_city:
         return None
 
-    if state and state != "ALL":
+    if state:
         cities = list((STATE_CITY_TO_AREA_ID.get(state) or {}).items())
     else:
         flat = []
@@ -232,12 +259,24 @@ def get_optional_agent_var(context, key: str, default: str = "") -> str:
 def build_main_menu(name: str) -> str:
     short_name = first_name(name)
     return (
-        f"Hi {short_name}!\n"
+        f"Hi {short_name}! You are logged in.\n"
         "1) Submit a patient lead\n"
         "2) Wallet\n"
-        "3) Change language\n"
-        "4) Help"
+        "3) Help"
     )
+
+
+def get_language_enum(label: Optional[str]):
+    normalized_label = normalize_choice(label)
+    if not normalized_label:
+        return None
+
+    language_details = LANGUAGE_OPTION_BY_LABEL.get(normalized_label)
+    if not language_details:
+        return None
+
+    _, language_name = language_details
+    return language_name
 
 
 class ShowMainMenu(SarvamTool):
@@ -287,7 +326,7 @@ class OnStart(SarvamOnStartTool):
         if response.status_code == 404:
             try_set_agent_var(context, "needs_onboarding", "true", missing)
             context.set_initial_bot_message(
-                "Welcome to Portea.\nLet's get you registered.\nWhat's your full name?"
+                "Welcome to Portea.\nPlease choose your language from the list to continue."
             )
             return context
 
@@ -299,12 +338,18 @@ class OnStart(SarvamOnStartTool):
         payload = response.json()
         partner = payload.get("partner") or {}
         partner_name = partner.get("name") or "there"
+        partner_language = partner.get("languagePreference") or ""
 
         try_set_agent_var(context, "partner_jwt", payload.get("accessToken") or "", missing)
         try_set_agent_var(context, "needs_onboarding", "false", missing)
         try_set_agent_var(context, "partner_name", partner_name, missing)
         try_set_agent_var(context, "partner_city", partner.get("city") or "", missing)
         try_set_optional_agent_var(context, "partner_role", partner.get("role") or "")
+        try_set_optional_agent_var(context, "partner_language", partner_language)
+
+        language_name = get_language_enum(partner_language)
+        if language_name is not None:
+            context.set_initial_language_name(language_name)
 
         context.set_initial_bot_message(build_main_menu(partner_name))
         return context
@@ -334,8 +379,9 @@ class CaptureReferralCode(SarvamTool):
                 response.raise_for_status()
             except Exception:
                 pass
+
         return SarvamToolOutput(
-            message_to_user=f"Referral ID {referral_code} linked successfully ✅",
+            message_to_user=f"Referral ID {referral_code} linked successfully.",
             context=context,
         )
 
@@ -347,6 +393,17 @@ class GetLanguageOptions(SarvamTool):
             message_to_user=build_numbered_menu(
                 options,
                 "Please choose your language. Reply with a number:",
+            ),
+            context=context,
+        )
+
+
+class GetPrimaryCities(SarvamTool):
+    async def run(self, context: SarvamToolContext) -> SarvamToolOutput:
+        return SarvamToolOutput(
+            message_to_user=build_numbered_menu(
+                PRIMARY_CITY_OPTIONS,
+                "Please choose your city. Reply with a number. If your city is not listed, choose 8.",
             ),
             context=context,
         )
@@ -372,8 +429,18 @@ class SwitchLanguage(SarvamTool):
 
         label, language_name = selected
         context.change_language(language_name)
+        try_set_optional_agent_var(context, "partner_language", label)
+        needs_onboarding = get_optional_agent_var(context, "needs_onboarding", "unknown")
+        partner_name = get_optional_agent_var(context, "partner_name")
+
+        if needs_onboarding == "true" and not partner_name:
+            return SarvamToolOutput(
+                message_to_user=f"Language changed to {label}.\nWhat is your full name?",
+                context=context,
+            )
+
         return SarvamToolOutput(
-            message_to_user=f"Language changed to {label} ✅",
+            message_to_user=f"Language changed to {label}.",
             context=context,
         )
 
@@ -447,12 +514,18 @@ class RegisterPartner(SarvamTool):
         if login_response.status_code in (200, 201):
             data = login_response.json()
             partner = data.get("partner") or {}
+            partner_language = partner.get("languagePreference") or ""
             try_set_optional_agent_var(context, "partner_jwt", data.get("accessToken") or "")
             try_set_optional_agent_var(context, "needs_onboarding", "false")
             try_set_optional_agent_var(context, "partner_phone", phone)
             try_set_optional_agent_var(context, "partner_name", partner.get("name") or "there")
             try_set_optional_agent_var(context, "partner_city", partner.get("city") or "")
             try_set_optional_agent_var(context, "partner_role", partner.get("role") or "")
+            try_set_optional_agent_var(context, "partner_language", partner_language)
+
+            language_name = get_language_enum(partner_language)
+            if language_name is not None:
+                context.change_language(language_name)
 
             referral_bdo_id = normalize_referral_code(self.bdo_id) or normalize_referral_code(
                 get_optional_agent_var(context, "referral_bdo_id")
@@ -492,24 +565,48 @@ class RegisterPartner(SarvamTool):
                 context=context,
             )
 
-        state_name = normalize_state(self.state) if self.state else None
-        if not state_name:
+        if not self.city:
             return SarvamToolOutput(
-                message_to_user="Please choose your state first from the numbered menu.",
+                message_to_user=build_numbered_menu(
+                    PRIMARY_CITY_OPTIONS,
+                    "Please choose your city. Reply with a number. If your city is not listed, choose 8.",
+                ),
                 context=context,
             )
 
-        resolved_city = resolve_city(self.city, state_name)
+        normalized_city_choice = normalize_choice(self.city)
+        if normalized_city_choice in {"8", "my city is not listed"}:
+            return SarvamToolOutput(
+                message_to_user="Please type your city name or send a voice note with your city.",
+                context=context,
+            )
+
+        resolved_city = None
+        if normalized_city_choice.isdigit():
+            index = int(normalized_city_choice) - 1
+            if 0 <= index < len(PRIMARY_CITY_OPTIONS) - 1:
+                resolved_city = PRIMARY_CITY_OPTIONS[index], None
+        else:
+            for city_name in PRIMARY_CITY_OPTIONS[:-1]:
+                if normalize_choice(city_name) == normalized_city_choice:
+                    resolved_city = city_name, None
+                    break
+
+        if not resolved_city:
+            resolved_city = resolve_city(self.city, None)
 
         if not resolved_city:
             return SarvamToolOutput(
-                message_to_user="Please choose a valid city from the menu.",
+                message_to_user="Please share a valid city from the supported list.",
                 context=context,
             )
 
         final_city, _ = resolved_city
         referral_bdo_id = normalize_referral_code(self.bdo_id) or normalize_referral_code(
             get_optional_agent_var(context, "referral_bdo_id")
+        )
+        language_preference = normalize_language(
+            get_optional_agent_var(context, "partner_language")
         )
 
         payload = {
@@ -518,6 +615,9 @@ class RegisterPartner(SarvamTool):
             "role": normalized_role,
             "city": final_city,
         }
+
+        if language_preference:
+            payload["languagePreference"] = language_preference
 
         if self.organization_name and self.organization_name.strip():
             payload["organizationName"] = self.organization_name.strip()
@@ -547,6 +647,11 @@ class RegisterPartner(SarvamTool):
         try_set_optional_agent_var(context, "partner_name", partner.get("name") or self.name.strip())
         try_set_optional_agent_var(context, "partner_city", partner.get("city") or final_city)
         try_set_optional_agent_var(context, "partner_role", partner.get("role") or normalized_role)
+        try_set_optional_agent_var(
+            context,
+            "partner_language",
+            partner.get("languagePreference") or language_preference or "",
+        )
 
         if referral_bdo_id:
             try_set_optional_agent_var(context, "referral_bdo_id", referral_bdo_id)
@@ -602,7 +707,7 @@ class SubmitLead(SarvamTool):
 
         return SarvamToolOutput(
             message_to_user=(
-                "Lead submitted successfully ✅"
+                "Lead submitted successfully."
                 + (f"\nLead ID: {lead_id}" if lead_id else "")
             ),
             context=context,
@@ -636,7 +741,7 @@ class GetWallet(SarvamTool):
         summary = data.get("summary") or {}
         return SarvamToolOutput(
             message_to_user=(
-                "Wallet 💰\n"
+                "Wallet\n"
                 f"Total: {summary.get('total_earned')}\n"
                 f"Pending: {summary.get('pending')}\n"
                 f"Paid: {summary.get('paid')}"
@@ -647,6 +752,7 @@ class GetWallet(SarvamTool):
 
 CaptureReferralCode.model_rebuild()
 GetLanguageOptions.model_rebuild()
+GetPrimaryCities.model_rebuild()
 SwitchLanguage.model_rebuild()
 GetStates.model_rebuild()
 GetCitiesForState.model_rebuild()

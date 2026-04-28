@@ -30,5 +30,10 @@ export class RegisterPartnerDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(32)
+  languagePreference?: string;
+
+  @IsOptional()
+  @IsString()
   organizationName?: string;
 }

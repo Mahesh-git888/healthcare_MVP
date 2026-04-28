@@ -7,6 +7,7 @@ export interface Partner {
   bdoId?: string | null;
   role: PartnerRole;
   city: string;
+  languagePreference?: string | null;
   organizationName?: string | null;
   createdAt: string;
 }
@@ -51,6 +52,7 @@ export interface CreatePartnerPayload {
   role: PartnerRole;
   bdoId?: string;
   city: string;
+  languagePreference?: string;
   organizationName?: string;
 }
 

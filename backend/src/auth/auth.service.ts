@@ -144,6 +144,7 @@ function serializePartner(partner: Partner) {
     bdoId: partner.bdoId ?? null,
     role: partner.role,
     city: partner.city,
+    languagePreference: partner.languagePreference ?? null,
     organizationName: partner.organizationName ?? null,
     createdAt: partner.createdAt,
   };
